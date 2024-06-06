@@ -8,33 +8,29 @@ on:
 jobs:
   pre-release:
     runs-on: ubuntu-latest
+  release:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
 
     steps:
       - name: Check out Git repository
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      - name: Install Node.js, NPM and Yarn
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      - name: Install dependencies
-        run: npm install
-
-      - name: Generate changelog
-        run: npx auto-changelog -p
-
-      - name: Build Electron app for all platforms
-        run: npm run package
-
-      - name: Create GitHub Pre-Release
-        id: create_pre_release
-        uses: softprops/action-gh-release@v2
+      - name: Build/release Electron app
+        uses: DarkGuy10/action-electron-builder@v1
         with:
-          files: ./release/build/*.{dmg,AppImage,zip,exe}
-          tag_name: ${{ github.ref }}
-          name: Pre-Release ${{ github.ref }}
-          body_path: ./CHANGELOG.md
-          draft: false
-          prerelease: true
-          token: ${{ secrets.GITHUB_TOKEN }}
+          # GitHub token, automatically provided to the action
+          # (No need to define this secret in the repo settings)
+          github_token: ${{ secrets.github_token }}
+
+          # If the commit is tagged with a pre-release version (e.g. "v1.0.0-pre"),
+          # release the app after building
+          release: ${{ contains(github.ref, '-pre') }}
