@@ -91,9 +91,10 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            ./release/build/macos/*.{dmg,AppImage,zip,exe}
-            ./release/build/ubuntu/*.{dmg,AppImage,zip,exe}
-            ./release/build/windows/*.{dmg,AppImage,zip,exe}
+            ./release/build/macos/*.dmg
+            ./release/build/ubuntu/*.AppImage
+            ./release/build/ubuntu/*.zip
+            ./release/build/windows/*.exe
           tag_name: ${{ github.ref }}
           name: Pre-Release ${{ github.ref }}
           body_path: ./CHANGELOG.md
