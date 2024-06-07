@@ -168,8 +168,8 @@
     "webpack-merge": "^5.10.0"
   },
   "build": {
-    "productName": "MBTilesASARGUI",
-    "appId": "org.digidem.MBTilesASARGUI",
+    "productName": "MBTiles-to-Asar",
+    "appId": "org.digidem.mbtiles-to-asar",
     "asar": true,
     "asarUnpack": "**\\*.{node,dll}",
     "files": [
