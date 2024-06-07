@@ -6,31 +6,61 @@ on:
       - 'v*.*.*-pre'
 
 jobs:
-  pre-release:
-    runs-on: ubuntu-latest
-  release:
+  build:
     runs-on: ${{ matrix.os }}
-
     strategy:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
 
     steps:
-      - name: Check out Git repository
-        uses: actions/checkout@v4
-
-      - name: Install Node.js, NPM and Yarn
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v2  # Stable version
+      - uses: actions/setup-node@v3  # Stable version
         with:
           node-version: 20
-
-      - name: Build/release Electron app
-        uses: DarkGuy10/action-electron-builder@v1
+      - name: Install dependencies
+        run: npm install
+      - name: Package
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run package -- --${{ matrix.os == 'macos-latest' && 'mac' || matrix.os == 'ubuntu-latest' && 'linux' || 'win' }}
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
         with:
-          # GitHub token, automatically provided to the action
-          # (No need to define this secret in the repo settings)
-          github_token: ${{ secrets.github_token }}
+          name: build-${{ matrix.os }}
+          path: ./release/build/
 
-          # If the commit is tagged with a pre-release version (e.g. "v1.0.0-pre"),
-          # release the app after building
-          release: ${{ contains(github.ref, '-pre') }}
+  release:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Download macOS Build Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-macos-latest
+          path: ./release/build/macos
+      - name: Download Ubuntu Build Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-ubuntu-latest
+          path: ./release/build/ubuntu
+      - name: Download Windows Build Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-windows-latest
+          path: ./release/build/windows
+      - name: List downloaded files
+        run: ls -R ./release/build
+      - name: Create GitHub Pre-Release
+        id: create_pre_release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            ./release/build/macos/*.{dmg,AppImage,zip,exe}
+            ./release/build/ubuntu/*.{dmg,AppImage,zip,exe}
+            ./release/build/windows/*.{dmg,AppImage,zip,exe}
+          tag_name: ${{ github.ref }}
+          name: Pre-Release ${{ github.ref }}
+          body_path: ./CHANGELOG.md
+          draft: false
+          prerelease: true
+          token: ${{ secrets.GITHUB_TOKEN }}
