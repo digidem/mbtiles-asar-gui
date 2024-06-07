@@ -13,10 +13,20 @@ jobs:
         os: [macos-latest, ubuntu-latest, windows-latest]
 
     steps:
-      - uses: actions/checkout@v2  # Stable version
-      - uses: actions/setup-node@v3  # Stable version
+      - uses: actions/checkout@v4  # Stable version
+      - uses: actions/setup-node@v4  # Stable version
         with:
           node-version: 20
+      - name: Set up Python
+        uses: actions/setup-python@v5  # Ensure Python is available
+        with:
+          python-version: '3.x'
+      - name: Install Build Tools
+        if: runner.os == 'macOS'
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install setuptools
+          python -m pip install wheel
       - name: Install dependencies
         run: npm install
       - name: Package
@@ -34,17 +44,17 @@ jobs:
     needs: build
     steps:
       - name: Download macOS Build Artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: build-macos-latest
           path: ./release/build/macos
       - name: Download Ubuntu Build Artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: build-ubuntu-latest
           path: ./release/build/ubuntu
       - name: Download Windows Build Artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: build-windows-latest
           path: ./release/build/windows
