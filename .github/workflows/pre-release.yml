@@ -38,29 +38,28 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: build-${{ matrix.os }}
-          path: ./release/build/
-
+          path: ./release/build/*.{dmg,AppImage,zip,exe}
   release:
     runs-on: ubuntu-latest
     needs: package
     steps:
-      - name: Download macOS Build Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: build-macos-latest
-          path: ./release/build/macos
+      # - name: Download macOS Build Artifacts
+      #   uses: actions/download-artifact@v4
+      #   with:
+      #     name: build-macos-latest
+      #     path: ./release/build/macos
+
+      # - name: Download Windows Build Artifacts
+      #   uses: actions/download-artifact@v4
+      #   with:
+      #     name: build-windows-latest
+      #     path: ./release/build/windows
 
       - name: Download Ubuntu Build Artifacts
         uses: actions/download-artifact@v4
         with:
           name: build-ubuntu-latest
           path: ./release/build/ubuntu
-
-      - name: Download Windows Build Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: build-windows-latest
-          path: ./release/build/windows
 
       - name: List downloaded files
         run: ls -R ./release/build
