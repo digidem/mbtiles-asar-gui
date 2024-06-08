@@ -34,23 +34,16 @@ jobs:
           python -m pip install setuptools
           python -m pip install wheel
 
-      - name: Cache Node.js dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
       - name: Install dependencies
         run: npm install
+
       - name: Build Electron app for all platforms
         run: |
-          if [ "${{ matrix.os }}" == "macos-latest" ]; then
+          if [[ "${{ matrix.os }}" == "macos-latest" ]]; then
             npm run package -- --mac
-          elif [ "${{ matrix.os }}" == "ubuntu-latest" ]; then
+          elif [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
             npm run package -- --linux
-          elif [ "${{ matrix.os }}" == "windows-latest" ]; then
+          elif [[ "${{ matrix.os }}" == "windows-latest" ]]; then
             npm run package -- --win
           fi
 
@@ -78,7 +71,6 @@ jobs:
 
       - name: Install dependencies
         run: npm install
-
       - name: Generate changelog
         run: npx auto-changelog -p
 
