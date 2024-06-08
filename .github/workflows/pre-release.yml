@@ -10,7 +10,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
 
     steps:
       - name: Check out Git repository
@@ -34,9 +34,16 @@ jobs:
           python -m pip install setuptools
           python -m pip install wheel
 
+      - name: Cache Node.js dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
       - name: Install dependencies
         run: npm install
-
       - name: Build Electron app for all platforms
         run: |
           if [ "${{ matrix.os }}" == "macos-latest" ]; then
@@ -81,11 +88,11 @@ jobs:
           name: build-macos-latest
           path: ./release/build/macos
 
-      # - name: Download Windows Build Artifacts
-      #   uses: actions/download-artifact@v4
-      #   with:
-      #     name: build-windows-latest
-      #     path: ./release/build/windows
+      - name: Download Windows Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-windows-latest
+          path: ./release/build/windows
 
       - name: Download Ubuntu Build Artifacts
         uses: actions/download-artifact@v4
@@ -108,6 +115,7 @@ jobs:
             ./release/build/ubuntu/*.AppImage
             ./release/build/ubuntu/*.zip
             ./release/build/windows/*.exe
+            ./release/build/windows/*.msi
           tag_name: ${{ github.ref }}
           name: Pre-Release ${{ github.ref }}
           body_path: ./CHANGELOG.md
