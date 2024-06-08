@@ -37,15 +37,17 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Build Electron app for all platforms
-        run: |
-          if [[ "${{ matrix.os }}" == "macos-latest" ]]; then
-            npm run package -- --mac
-          elif [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
-            npm run package -- --linux
-          elif [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-            npm run package -- --win
-          fi
+      - name: Build Electron app for macOS
+        if: matrix.os == 'macos-latest'
+        run: npm run package -- --mac
+
+      - name: Build Electron app for Ubuntu
+        if: matrix.os == 'ubuntu-latest'
+        run: npm run package -- --linux
+
+      - name: Build Electron app for Windows
+        if: matrix.os == 'windows-latest'
+        run: npm run package -- --win
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
