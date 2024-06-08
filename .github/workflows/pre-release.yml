@@ -33,7 +33,6 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install setuptools
           python -m pip install wheel
-          python3 -m pip install distutils
 
       - name: Install dependencies
         run: npm install
