@@ -3,8 +3,10 @@ import fs from 'fs';
 import path from 'path';
 import os from 'os';
 import crypto from 'crypto';
-import { exec } from 'child_process';
 import { convertToAsar } from 'mbtiles-to-asar';
+import archiver from 'archiver';
+
+process.noAsar = true;
 
 const handleUploadFile = async (event: IpcMainEvent, filePath: string) => {
   console.log('upload-file received from renderer process', filePath);
@@ -32,26 +34,33 @@ const handleUploadFile = async (event: IpcMainEvent, filePath: string) => {
     // Create a zip file of the output directory
     const zipFilePath = path.join(tempDir, `mapeo-asar-background-map.zip`);
 
-    if (fs.existsSync(outputDir)) {
-      console.log('Output directory found at path:', outputDir);
-      const isWindows = os.platform() === 'win32';
-      const command = isWindows
-        ? `powershell Compress-Archive -Path ${path.join(outputDir, '*')} -DestinationPath ${zipFilePath}`
-        : `cd ${path.dirname(outputDir)} && zip -r ${zipFilePath} ${path.basename(outputDir)}`;
-      await new Promise((resolve, reject) => {
-        exec(command, (error, stdout, stderr) => {
-          if (error) {
-            console.error(`Error creating zip file: ${stderr}`);
-            reject(error);
-          } else {
-            console.log(`Zip file created: ${zipFilePath}`);
-            resolve(stdout);
-          }
-        });
-      });
-    } else {
-      throw new Error(`Output directory not found at path: ${outputDir}`);
-    }
+    const output = fs.createWriteStream(zipFilePath);
+    const archive = archiver('zip', {
+      zlib: { level: 9 },
+      store: true, // Do not compress files, store them uncompressed
+    });
+    output.on('close', () => {
+      console.log(`Zip file created: ${zipFilePath}`);
+    });
+
+    archive.on('error', (err: Error) => {
+      throw err;
+    });
+    archive.on('warning', (err: any) => {
+      if (err.code === 'ENOENT') {
+        // log warning
+      } else {
+        // throw error
+        throw err;
+      }
+    });
+
+    archive.pipe(output);
+    archive.directory(outputDir, 'default');
+    // await pipeline(archive, output);
+    archive.finalize();
+    // Provide the URL for the front-end to download the zip file
+
     const downloadUrl = `file://${zipFilePath}`;
     // Get OS information and default application folder
     const osType = os.type();
