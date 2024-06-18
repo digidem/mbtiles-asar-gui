@@ -1,4 +1,4 @@
-import { ipcMain, IpcMainEvent } from 'electron';
+import { ipcMain } from 'electron';
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
@@ -6,9 +6,11 @@ import crypto from 'crypto';
 import { convertToAsar } from 'mbtiles-to-asar';
 import archiver from 'archiver';
 
-process.noAsar = true;
-
-const handleUploadFile = async (event: IpcMainEvent, filePath: string) => {
+const handleUploadFile = async (
+  // eslint-disable-next-line no-undef
+  event: Electron.IpcMainEvent,
+  filePath: string,
+) => {
   console.log('upload-file received from renderer process', filePath);
   if (!filePath) {
     console.log('No file path received.');
@@ -35,6 +37,7 @@ const handleUploadFile = async (event: IpcMainEvent, filePath: string) => {
     const zipFilePath = path.join(tempDir, `mapeo-asar-background-map.zip`);
 
     const output = fs.createWriteStream(zipFilePath);
+    process.noAsar = true;
     const archive = archiver('zip', {
       zlib: { level: 9 },
       store: true, // Do not compress files, store them uncompressed

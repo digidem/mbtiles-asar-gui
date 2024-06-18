@@ -21,6 +21,7 @@ const copyRecursiveSync = (src: string, dest: string) => {
 };
 
 const handleCopyDefaultFolder = async (
+  // eslint-disable-next-line no-undef
   event: Electron.IpcMainEvent,
   outputDir: string,
 ) => {
@@ -75,7 +76,7 @@ const handleCopyDefaultFolder = async (
       let backupDir;
       do {
         backupDir = path.join(mapeoTilesDir, `default-${index}`);
-        index++;
+        index += 1;
       } while (fs.existsSync(backupDir));
       console.log(`Backing up existing default folder to: ${backupDir}`);
       fs.renameSync(defaultDir, backupDir);
