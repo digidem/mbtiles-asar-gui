@@ -1,6 +1,6 @@
 {
   "name": "mbtiles-asar-gui",
-  "version": "1.0.1",
+  "version": "1.0.0",
   "description": "A GUI for converting MBTiles to ASAR",
   "license": "MIT",
   "type": "commonjs",

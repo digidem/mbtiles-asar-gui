@@ -10,7 +10,7 @@ function SingleFileUploadForm() {
   const handleUpload = async (file) => {
     if (!file) return;
     setUploading(true);
-    const filePath = file.path; // This assumes you're handling a file input element
+    const filePath = file.path || file.webkitRelativePath || file.name; // Ensure compatibility
     window.electron.ipcRenderer.sendMessage('upload-file', filePath);
   };
 
@@ -30,6 +30,7 @@ function SingleFileUploadForm() {
 
   useEffect(() => {
     const handleResponse = (result: any) => {
+      console.log('Upload response received:', result); // Add logging
       if (result.uploaded) {
         setUploading(false);
         setProcessing(true);
@@ -42,20 +43,19 @@ function SingleFileUploadForm() {
         setResults(result);
         setUploading(false);
         setProcessing(false);
-        // Update state or perform any other actions with the result
       }
     };
-
+    console.log('Setting up IPC listeners');
     window.electron.ipcRenderer.on('upload-file-response', handleResponse);
 
     return () => {
+      console.log('Removing IPC listeners');
       window.electron.ipcRenderer.removeListener(
         'upload-file-response',
         handleResponse,
       );
     };
   }, []);
-
   const { getRootProps, getInputProps } = useDropzone({
     onDrop,
     useFsAccessApi: false,
