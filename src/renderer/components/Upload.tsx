@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 
 function SingleFileUploadForm() {
@@ -12,22 +12,6 @@ function SingleFileUploadForm() {
     setUploading(true);
     const filePath = file.path; // This assumes you're handling a file input element
     window.electron.ipcRenderer.sendMessage('upload-file', filePath);
-    window.electron.ipcRenderer.on('upload-file-response', (result: any) => {
-      if (result.uploaded) {
-        setUploading(false);
-        setProcessing(true);
-      } else if (result.error || result.canceled) {
-        setUploading(false);
-        setProcessing(false);
-        setFailed(result.error);
-        console.log('File upload was canceled or failed.', result);
-      } else {
-        setResults(result);
-        setUploading(false);
-        setProcessing(false);
-        // Update state or perform any other actions with the result
-      }
-    });
   };
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -43,6 +27,35 @@ function SingleFileUploadForm() {
       handleUpload(file);
     }
   }, []);
+
+  useEffect(() => {
+    const handleResponse = (result: any) => {
+      if (result.uploaded) {
+        setUploading(false);
+        setProcessing(true);
+      } else if (result.error || result.canceled) {
+        setUploading(false);
+        setProcessing(false);
+        setFailed(result.error);
+        console.log('File upload was canceled or failed.', result);
+      } else {
+        setResults(result);
+        setUploading(false);
+        setProcessing(false);
+        // Update state or perform any other actions with the result
+      }
+    };
+
+    window.electron.ipcRenderer.on('upload-file-response', handleResponse);
+
+    return () => {
+      window.electron.ipcRenderer.removeListener(
+        'upload-file-response',
+        handleResponse,
+      );
+    };
+  }, []);
+
   const { getRootProps, getInputProps } = useDropzone({
     onDrop,
     useFsAccessApi: false,
@@ -50,7 +63,6 @@ function SingleFileUploadForm() {
       'application/x-sqlite3': ['.mbtiles'],
     },
   });
-
   return (
     <div>
       <div className="mt-4 text-center pb-4">
