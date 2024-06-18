@@ -57,7 +57,6 @@ const handleUploadFile = async (event: IpcMainEvent, filePath: string) => {
 
     archive.pipe(output);
     archive.directory(outputDir, 'default');
-    // await pipeline(archive, output);
     archive.finalize();
     // Provide the URL for the front-end to download the zip file
 
