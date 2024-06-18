@@ -6,7 +6,6 @@ function SingleFileUploadForm() {
   const [results, setResults] = useState<string | null>(null);
   const [failed, setFailed] = useState<boolean>(null);
   const [processing, setProcessing] = useState<boolean>(false);
-  const [filePaths, setFilePaths] = useState([]);
   const [tab, setTab] = useState('desktop');
   const handleUpload = async (file) => {
     if (!file) return;
@@ -26,39 +25,13 @@ function SingleFileUploadForm() {
         setResults(result);
         setUploading(false);
         setProcessing(false);
-        console.log('File uploaded successfully:', result);
         // Update state or perform any other actions with the result
       }
     });
   };
 
-  const handleMoveToDesktop = async () => {
-    await window.electron.ipcRenderer.sendMessage(
-      'copy-default-folder',
-      results?.outputDir,
-    );
-    window.electron.ipcRenderer.once(
-      'copy-default-folder-response',
-      (result: any) => {
-        if (result.canceled) {
-          console.error(
-            'File extraction was canceled or failed:',
-            result.error,
-          );
-        } else {
-          console.log(
-            'Files moved to Mapeo tiles directory:',
-            result.mapeoTilesDir,
-          );
-          alert('Files successfully moved to Mapeo tiles directory!');
-        }
-      },
-    );
-  };
-
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles.length) {
-      setFilePaths(acceptedFiles.map((f) => `"${f.path}"`));
       const file = acceptedFiles[0];
       /** File validation */
       if (window.innerWidth > 768) {
@@ -68,8 +41,6 @@ function SingleFileUploadForm() {
         }
       }
       handleUpload(file);
-    } else {
-      setFilePaths(['Error']);
     }
   }, []);
   const { getRootProps, getInputProps } = useDropzone({
@@ -113,13 +84,6 @@ function SingleFileUploadForm() {
               className="bg-blue-500 text-white font-bold py-2 px-4 rounded-full shadow-lg hover:bg-blue-700 transition duration-300 ease-in-out transform hover:scale-105"
             >
               Download zip
-            </button>
-            <button
-              type="button"
-              onClick={handleMoveToDesktop}
-              className="bg-green-500 text-white font-bold py-2 px-4 rounded-full shadow-lg hover:bg-green-700 transition duration-300 ease-in-out transform hover:scale-105"
-            >
-              Move to Mapeo Desktop
             </button>
             <div className="mt-4 flex flex-col items-center max-w-[500px]">
               <h2 className="text-lg font-bold text-center py-2">
