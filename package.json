@@ -179,6 +179,7 @@
     ],
     "afterSign": ".erb/scripts/notarize.js",
     "mac": {
+      "icon": "assets/icon.icns",
       "target": {
         "target": "default",
         "arch": [
@@ -207,11 +208,13 @@
       ]
     },
     "win": {
+      "icon": "assets/icon.ico",
       "target": [
         "nsis"
       ]
     },
     "linux": {
+      "icon": "assets/icon.png",
       "target": [
         "AppImage"
       ],
